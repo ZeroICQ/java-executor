@@ -5,6 +5,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Queue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.Condition;
@@ -23,13 +24,20 @@ public class Executor {
         this(DEFAULT_THREAD_NUMBER);
     }
 
-    Executor(int thread_number) {
+    public Executor(int thread_number) {
         for (int i = 0; i < thread_number; i++) {
             Thread newThread = new Thread(new ExecutorThread());
             newThread.start();
             threads.add(newThread);
 
         }
+    }
+
+    public Future<Boolean> execute(final Runnable runnable) {
+        return execute(() -> {
+            runnable.run();
+            return true;
+        });
     }
 
     public <T> Future<T> execute(final Callable<T> callable) {
@@ -48,7 +56,23 @@ public class Executor {
         return future;
     }
 
+    public void stop() {
+        for (Thread t : threads) {
+            t.interrupt();
+        }
+
+        for (Thread t : threads) {
+            try {
+                t.join();
+            } catch (InterruptedException ignored) {}
+        }
+    }
+
     private ExecutorTask getTask() throws InterruptedException {
+        if (Thread.interrupted()) {
+            throw new InterruptedException();
+        }
+
         lock.lock();
 
         try {
@@ -61,12 +85,13 @@ public class Executor {
     }
 
     private class ExecutorThread implements Runnable {
-
         @Override
         public void run() {
             try {
-                ExecutorTask task = Executor.this.getTask();
-                task.run();
+                while (true) {
+                    ExecutorTask task = Executor.this.getTask();
+                    task.run();
+                }
             } catch (InterruptedException e) {
                 //just exit
             }
