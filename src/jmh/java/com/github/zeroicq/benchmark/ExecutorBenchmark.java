@@ -35,28 +35,28 @@ public class ExecutorBenchmark   {
         uselessMethod();
     }
 
-//    @Benchmark
-//    public void uselessConsequentially(MyState state) {
-//        for (int i = 0; i < state.USELSESS_NUMBER; i++) {
-//            uselessMethod();
-//        }
-//    }
-//
-//    @Benchmark
-//    public void uselessThreads_2(MyState state) throws ExecutionException, InterruptedException {
-//        Executor executor = new Executor(2);
-//        ArrayList<Future> futures = new ArrayList<>();
-//
-//        for (int i = 0; i < state.USELSESS_NUMBER; i++) {
-//            Future<Boolean> future = executor.execute(this::uselessMethod);
-//            futures.add(future);
-//        }
-//
-//        for (Future f : futures) {
-//            f.get();
-//        }
-//        executor.stop();
-//    }
+    @Benchmark
+    public void uselessConsequentially(MyState state) {
+        for (int i = 0; i < state.USELSESS_NUMBER; i++) {
+            uselessMethod();
+        }
+    }
+
+    @Benchmark
+    public void uselessThreads(MyThreadState state) throws ExecutionException, InterruptedException {
+        Executor executor = new Executor(state.threads);
+        ArrayList<Future> futures = new ArrayList<>();
+
+        for (int i = 0; i < state.USELSESS_NUMBER; i++) {
+            Future<Boolean> future = executor.execute(this::uselessMethod);
+            futures.add(future);
+        }
+
+        for (Future f : futures) {
+            f.get();
+        }
+        executor.stop();
+    }
 
 
     @Benchmark
