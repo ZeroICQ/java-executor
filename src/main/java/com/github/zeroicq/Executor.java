@@ -5,7 +5,6 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Queue;
 import java.util.concurrent.Callable;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.locks.Condition;
@@ -33,6 +32,8 @@ public class Executor {
         }
     }
 
+    //My little hack for functions that return void.
+    //Just make them return true.
     public Future<Boolean> execute(final Runnable runnable) {
         return execute(() -> {
             runnable.run();
