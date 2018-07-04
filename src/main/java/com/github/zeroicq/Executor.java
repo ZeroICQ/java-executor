@@ -1,6 +1,8 @@
 package com.github.zeroicq;
 
 
+import com.sun.org.apache.xpath.internal.operations.Bool;
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Queue;
@@ -14,10 +16,10 @@ import java.util.concurrent.locks.ReentrantLock;
 public class Executor {
     private static int DEFAULT_THREAD_NUMBER = 4;
 
-    final private Queue<ExecutorTask> taskQueue          = new ArrayDeque<>();
-    final private ArrayList<Thread>   threads            = new ArrayList<>();
-    final private                     ReentrantLock lock = new ReentrantLock();
-    final private                     Condition hasTasks = lock.newCondition();
+    final private Queue<SimpleExecutorTask> taskQueue          = new ArrayDeque<>();
+    final private ArrayList<Thread>         threads            = new ArrayList<>();
+    final private                           ReentrantLock lock = new ReentrantLock();
+    final private                           Condition hasTasks = lock.newCondition();
 
     Executor() {
         this(DEFAULT_THREAD_NUMBER);
@@ -32,29 +34,28 @@ public class Executor {
         }
     }
 
-    //My little hack for functions that return void.
-    //Just make them return true.
-    public Future<Boolean> execute(final Runnable runnable) {
-        return execute(() -> {
-            runnable.run();
-            return true;
-        });
-    }
-
     public <T> Future<T> execute(final Callable<T> callable) {
-        FutureTask<T>   future       = new FutureTask<>(callable);
-        ExecutorTask<T> executorTask = new ExecutorTask<>(future);
-
-        lock.lock();
-        try {
-            taskQueue.add(executorTask);
-            //tries to acquire lock?
-            hasTasks.signal();
-        } finally {
-            lock.unlock();
-        }
+        FutureTask<T>         future       = new FutureTask<>(callable);
+        SimpleExecutorTask<T> executorTask = new SimpleExecutorTask<>(future);
+        addTask(executorTask);
 
         return future;
+    }
+
+    public Future<Boolean> execute(final Runnable runnable) {
+        return execute(makeCallableFromRunnable(runnable));
+    }
+
+    public <T, D> Future<T> when(final Callable<T> callable, Future<D> condition) {
+        FutureTask<T> future = new FutureTask<>(callable);
+        OneConditionExecutorTask<T, D> task = new OneConditionExecutorTask<>(future, condition);
+        addTask(task);
+
+        return future;
+    }
+
+    public <D> Future<Boolean> when(final Runnable runnable, Future<D> condition) {
+        return when(makeCallableFromRunnable(runnable), condition);
     }
 
     public void stop() {
@@ -69,7 +70,27 @@ public class Executor {
         }
     }
 
-    private ExecutorTask getTask() throws InterruptedException {
+    //My little hack for functions that return void.
+    //Just make them return true.
+    private Callable<Boolean> makeCallableFromRunnable(final Runnable runnable) {
+        return () -> {
+            runnable.run();
+            return true;
+        };
+    }
+
+    private void addTask(final SimpleExecutorTask task) {
+        lock.lock();
+        try {
+            taskQueue.add(task);
+            //ASK: tries to acquire lock?
+            hasTasks.signal();
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    private SimpleExecutorTask getTask() throws InterruptedException {
         if (Thread.interrupted()) {
             throw new InterruptedException();
         }
@@ -90,8 +111,12 @@ public class Executor {
         public void run() {
             try {
                 while (true) {
-                    ExecutorTask task = Executor.this.getTask();
-                    task.run();
+                    SimpleExecutorTask task = Executor.this.getTask();
+                    boolean wasRan = task.run();
+                    //conditions weren't met so we add task back to the queue
+                    if (!wasRan) {
+                        addTask(task);
+                    }
                 }
             } catch (InterruptedException e) {
                 //just exit
