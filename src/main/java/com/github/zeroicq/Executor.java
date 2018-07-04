@@ -46,7 +46,7 @@ public class Executor {
         return execute(makeCallableFromRunnable(runnable));
     }
 
-    public <T, D> Future<T> when(final Callable<T> callable, Future<D> condition) {
+    public <T, D> Future<T> when(final Callable<T> callable, final Future<D> condition) {
         FutureTask<T> future = new FutureTask<>(callable);
         OneConditionExecutorTask<T, D> task = new OneConditionExecutorTask<>(future, condition);
         addTask(task);
@@ -54,8 +54,12 @@ public class Executor {
         return future;
     }
 
-    public <D> Future<Boolean> when(final Runnable runnable, Future<D> condition) {
+    public <D> Future<Boolean> when(final Runnable runnable, final Future<D> condition) {
         return when(makeCallableFromRunnable(runnable), condition);
+    }
+
+    public <T> Future<T> whenAll(final Callable<T> callable, final Future<?>... conditions) {
+
     }
 
     public void stop() {
