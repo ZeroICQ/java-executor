@@ -3,6 +3,7 @@ package com.github.zeroicq.benchmark;
 import com.github.zeroicq.Executor;
 import org.openjdk.jmh.annotations.*;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -22,6 +23,24 @@ public class ExecutorBenchmark   {
     public static class MyThreadState extends MyState {
         @Param({"2", "4", "6", "8"})
         public int threads;
+    }
+
+    private BigInteger factorialRecursive(BigInteger n) {
+        if (n.equals(BigInteger.ONE)) {
+            return BigInteger.ONE;
+        }
+        return n.multiply(factorialRecursive(n.subtract(BigInteger.ONE)));
+    }
+
+    private BigInteger factorialLoop(BigInteger n) {
+        BigInteger answ = BigInteger.ONE;
+
+        while (n.compareTo(BigInteger.ONE) > 0) {
+            answ = answ.multiply(n);
+            n = n.subtract(BigInteger.ONE);
+        }
+
+        return answ;
     }
 
     private void uselessMethod() {
@@ -79,6 +98,54 @@ public class ExecutorBenchmark   {
         for (Future f : futures) {
             f.get();
         }
+        executor.stop();
+    }
+
+    @Benchmark
+    public void factorialsConsequentiallyRecursive() {
+        for (long i = 1_000; i < 5_000; i++) {
+            factorialRecursive(BigInteger.valueOf(i));
+        }
+    }
+
+    @Benchmark
+    public void factorialRecursiveThreads(MyThreadState state) throws ExecutionException, InterruptedException {
+        Executor executor = new Executor(state.threads);
+        ArrayList<Future<BigInteger>> futures = new ArrayList<>();
+
+        for (long i = 1_000; i < 5_000; i++) {
+            long c = i;
+            futures.add(executor.execute(() -> factorialRecursive(BigInteger.valueOf(c))));
+        }
+
+        for (Future f : futures) {
+            f.get();
+        }
+
+        executor.stop();
+    }
+
+    @Benchmark
+    public void factorialsConsequentiallyLoop() {
+        for (long i = 1_000; i < 5_000; i++) {
+            factorialLoop(BigInteger.valueOf(i));
+        }
+    }
+
+    @Benchmark
+    public void factorialLoopThreads(MyThreadState state) throws ExecutionException, InterruptedException {
+        Executor executor = new Executor(state.threads);
+        ArrayList<Future<BigInteger>> futures = new ArrayList<>();
+
+        for (long i = 1_000; i < 5_000; i++) {
+            long c = i;
+            futures.add(executor.execute(() -> factorialLoop(BigInteger.valueOf(c))));
+        }
+
+        for (Future f : futures) {
+            f.get();
+        }
+
         executor.stop();
     }
 

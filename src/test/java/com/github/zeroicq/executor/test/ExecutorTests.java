@@ -2,8 +2,9 @@ package com.github.zeroicq.executor.test;
 
 import com.github.zeroicq.Executor;
 import org.junit.Assert;
-import org.junit.Assume;
 import org.junit.Test;
+
+import java.util.ArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -40,6 +41,31 @@ public class ExecutorTests {
 
         fastFuture.get();
         Assert.assertTrue(longFuture.isDone());
+
+        executor.stop();
+    }
+
+    @Test
+    public void testWhenAll() throws ExecutionException, InterruptedException {
+        Executor executor = new Executor();
+        ArrayList<Future<Integer>> longTasks = new ArrayList<>();
+
+        for (int i = 0; i < 10; i++) {
+            longTasks.add(executor.execute(() -> TestHelper.longSum(1, 2)));
+        }
+
+        Future fastTask = executor.whenAll(() -> TestHelper.sum(10, 20), longTasks.toArray(new Future[0]));
+
+        for (Future f : longTasks) {
+            f.get();
+            Assert.assertFalse(fastTask.isDone());
+        }
+
+        fastTask.get();
+
+        for (Future f : longTasks) {
+            Assert.assertTrue(f.isDone());
+        }
 
         executor.stop();
     }
