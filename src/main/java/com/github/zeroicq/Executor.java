@@ -19,7 +19,7 @@ public class Executor {
     final private                           ReentrantLock lock = new ReentrantLock();
     final private                           Condition hasTasks = lock.newCondition();
 
-    Executor() {
+    public Executor() {
         this(DEFAULT_THREAD_NUMBER);
     }
 
