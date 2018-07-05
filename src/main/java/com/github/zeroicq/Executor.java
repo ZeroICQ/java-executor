@@ -1,8 +1,6 @@
 package com.github.zeroicq;
 
 
-import com.sun.org.apache.xpath.internal.operations.Bool;
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Queue;
@@ -59,7 +57,15 @@ public class Executor {
     }
 
     public <T> Future<T> whenAll(final Callable<T> callable, final Future<?>... conditions) {
+        FutureTask<T> future = new FutureTask<>(callable);
+        MultipleConditionsExecutorTask<T> task = new MultipleConditionsExecutorTask<>(future, conditions);
+        addTask(task);
 
+        return future;
+    }
+
+    public Future<Boolean> whenAll(final Runnable runnable, final Future<?>... conditions) {
+        return whenAll(makeCallableFromRunnable(runnable), conditions);
     }
 
     public void stop() {
