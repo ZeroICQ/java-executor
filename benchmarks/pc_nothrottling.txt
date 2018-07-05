@@ -1,0 +1,21 @@
+Benchmark                                             (threads)  Mode  Cnt         Score   Error  Units
+ExecutorBenchmark.factorialLoopThreads                        2    ss        8717536.414          us/op
+ExecutorBenchmark.factorialLoopThreads                        4    ss        8182644.761          us/op
+ExecutorBenchmark.factorialLoopThreads                        6    ss        8277439.493          us/op
+ExecutorBenchmark.factorialLoopThreads                        8    ss        8383113.264          us/op
+ExecutorBenchmark.factorialRecursiveThreads                   2    ss        7452586.468          us/op
+ExecutorBenchmark.factorialRecursiveThreads                   4    ss        7350406.511          us/op
+ExecutorBenchmark.factorialRecursiveThreads                   6    ss        7612326.063          us/op
+ExecutorBenchmark.factorialRecursiveThreads                   8    ss        7448016.765          us/op
+ExecutorBenchmark.factorialsConsequentiallyLoop             N/A    ss       12921255.448          us/op
+ExecutorBenchmark.factorialsConsequentiallyRecursive        N/A    ss       10843195.250          us/op
+ExecutorBenchmark.uselessConsequentially                    N/A    ss           6032.459          us/op
+ExecutorBenchmark.uselessLongConsequentially                N/A    ss       27580862.700          us/op
+ExecutorBenchmark.uselessLongThreads                          2    ss       16881328.370          us/op
+ExecutorBenchmark.uselessLongThreads                          4    ss       15304144.346          us/op
+ExecutorBenchmark.uselessLongThreads                          6    ss       13562654.686          us/op
+ExecutorBenchmark.uselessLongThreads                          8    ss       15921435.842          us/op
+ExecutorBenchmark.uselessThreads                              2    ss         274259.527          us/op
+ExecutorBenchmark.uselessThreads                              4    ss         274365.277          us/op
+ExecutorBenchmark.uselessThreads                              6    ss         473252.553          us/op
+ExecutorBenchmark.uselessThreads                              8    ss         390380.530          us/op
