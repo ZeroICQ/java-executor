@@ -81,7 +81,7 @@ public class ExecutorTests {
 
     @Test
     public void testSort() throws ExecutionException, InterruptedException {
-        Executor executor = new Executor(1);
+        Executor executor = new Executor();
         Random rnd = new Random(1000);
         RandomString rndString = new RandomString(200, rnd, RandomString.alphanum);
 

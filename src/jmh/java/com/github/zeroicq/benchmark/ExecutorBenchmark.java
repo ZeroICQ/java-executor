@@ -156,10 +156,10 @@ public class ExecutorBenchmark   {
     public void sortNoThread() {
         Executor executor = new Executor();
         Random rnd = new Random(200);
-        RandomString rndString = new RandomString(200, rnd, RandomString.alphanum);
+        RandomString rndString = new RandomString(500000, rnd, RandomString.alphanum);
 
         ArrayList<String> strings = new ArrayList<>();
-        for (int i = 0; i < 1_000_000; i++) {
+        for (int i = 0; i < 1000; i++) {
             strings.add(rndString.nextString());
         }
 
@@ -175,10 +175,10 @@ public class ExecutorBenchmark   {
     public void sortThreads(MyThreadState state) throws ExecutionException, InterruptedException {
         Executor executor = new Executor(state.threads);
         Random rnd = new Random(200);
-        RandomString rndString = new RandomString(200, rnd, RandomString.alphanum);
+        RandomString rndString = new RandomString(500000, rnd, RandomString.alphanum);
 
         ArrayList<String> strings = new ArrayList<>();
-        for (int i = 0; i < 1_000_000; i++) {
+        for (int i = 0; i < 1000; i++) {
             strings.add(rndString.nextString());
         }
 
