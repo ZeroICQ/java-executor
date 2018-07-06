@@ -13,7 +13,7 @@ public class TestHelper {
     public static int longSum(int a, int b) throws InterruptedException {
         for (int i = 0; i < 1000000; i++)
             ;
-        Thread.sleep(2000);
+        Thread.sleep(1000);
         return sum(a, b);
     }
 }
