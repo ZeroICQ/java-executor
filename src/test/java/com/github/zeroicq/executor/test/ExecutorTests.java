@@ -109,9 +109,6 @@ public class ExecutorTests {
     }
 
     private void qsort(ArrayList<String> arrayList, Executor executor, Comparator<String> cmp, int begin, int end) {
-        System.out.println("Qsort");
-        System.out.println(begin);
-        System.out.println(end + "\n");
         int left = begin;
         int right = end;
         int size = end - left + 1;
@@ -154,12 +151,7 @@ public class ExecutorTests {
 
         if (end - pivot >= 2) {
             try {
-                System.out.println("waiting right");
-                System.out.println(finalPivot + 1);
-                System.out.println(end + "\n");
                 executor.execute(() -> {qsort(arrayList, executor, cmp, finalPivot+1, end);}).get();
-                System.out.println("end waiting right");
-
             } catch (InterruptedException e) {
                 e.printStackTrace();
             } catch (ExecutionException e) {
@@ -168,12 +160,7 @@ public class ExecutorTests {
         }
 
         try {
-            System.out.println("waiting left");
-            System.out.println(begin);
-            System.out.println(finalPivot + "\n");
-
             leftFuture.get();
-            System.out.println("end waiting left");
         } catch (InterruptedException e) {
             e.printStackTrace();
         } catch (ExecutionException e) {
