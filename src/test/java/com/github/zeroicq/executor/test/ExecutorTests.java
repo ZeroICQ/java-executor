@@ -5,6 +5,7 @@ import org.junit.Assert;
 import org.junit.Test;
 
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -78,16 +79,21 @@ public class ExecutorTests {
         }
     };
 
-//    @Test
-    public void testSort() {
-        Executor executor = new Executor();
-        Random rnd = new Random(200);
-        RandomString rndString = new RandomString(20, rnd, RandomString.alphanum);
+    @Test
+    public void testSort() throws ExecutionException, InterruptedException {
+        Executor executor = new Executor(1);
+        Random rnd = new Random(1000);
+        RandomString rndString = new RandomString(200, rnd, RandomString.alphanum);
 
         ArrayList<String> strings = new ArrayList<>();
         for (int i = 0; i < 10; i++) {
             strings.add(rndString.nextString());
         }
+//        ArrayList<String> strings = new ArrayList<>();
+//
+//        strings.add("z");
+//        strings.add("y");
+//        strings.add("x");
 
         ArrayList<String> stdSortStrings = new ArrayList<>(strings.size());
         ArrayList<String> executorSortStrings = new ArrayList<>(strings.size());
@@ -98,73 +104,60 @@ public class ExecutorTests {
         }
 
         stdSortStrings.sort(ALPHABETICAL_ORDER);
-        qsort(executorSortStrings, executor, ALPHABETICAL_ORDER);
+        mergeSort(executorSortStrings, executor, ALPHABETICAL_ORDER).get();
 
         Assert.assertArrayEquals(stdSortStrings.toArray(new String[0]), executorSortStrings.toArray(new String[0]));
         executor.stop();
     }
 
-    public void qsort(ArrayList<String> arrayList, Executor executor, Comparator<String> cmp) {
-        qsort(arrayList, executor, cmp, 0, arrayList.size() - 1);
+    public Future mergeSort(ArrayList<String> arrayList, Executor executor, Comparator<String> cmp) throws ExecutionException, InterruptedException {
+        if (arrayList.size() == 1) {
+            CompletableFuture<Boolean> f = new CompletableFuture<>();
+            f.complete(true);
+            return f;
+        }
+
+        ArrayList<String> left  = new ArrayList<>();
+        ArrayList<String> right = new ArrayList<>();
+
+        int middle = arrayList.size() / 2;
+
+        for (ListIterator<String> it = arrayList.listIterator(); it.nextIndex() != middle;) {
+            left.add(it.next());
+        }
+
+        for (ListIterator<String> it = arrayList.listIterator(middle); it.hasNext();) {
+            right.add(it.next());
+        }
+
+        Future leftFuture = mergeSort(left, executor, cmp);
+        Future rightFuture = mergeSort(right, executor, cmp);
+
+
+        return executor.whenAll(() -> merge(left, right, arrayList, cmp), leftFuture, rightFuture);
     }
 
-    private void qsort(ArrayList<String> arrayList, Executor executor, Comparator<String> cmp, int begin, int end) {
-        int left = begin;
-        int right = end;
-        int size = end - left + 1;
-        int pivot = begin + size / 2;
+    private void merge(ArrayList<String> array1 , ArrayList<String> array2, ArrayList<String> destination, Comparator<String> cmp) {
+        int curPos = 0;
+        int pos1 = 0;
+        int pos2 = 0;
 
-
-        if (size < 2) {
-            return;
-        }
-
-        while (!(left == pivot && right == pivot)) {
-            while (cmp.compare(arrayList.get(left), arrayList.get(pivot)) <= 0 && left < pivot ) {
-                ++left;
+        while (pos1 != array1.size() || pos2 != array2.size()) {
+            if (pos1 == array1.size()) {
+                destination.set(curPos, array2.get(pos2));
+                pos2++;
+            } else if (pos2 == array2.size()) {
+                destination.set(curPos, array1.get(pos1));
+                pos1++;
+            } else if (cmp.compare(array1.get(pos1), array2.get(pos2)) >= 0 ) {
+                destination.set(curPos, array2.get(pos2));
+                pos2++;
+            } else {
+                destination.set(curPos, array1.get(pos1));
+                pos1++;
             }
-
-            while (cmp.compare(arrayList.get(right), arrayList.get(pivot)) >= 0 && right > pivot) {
-                --right;
-            }
-
-            if (left == pivot) {
-                pivot = right;
-            } else if (right == pivot) {
-                pivot = left;
-            }
-
-            //swap
-            String tmp = arrayList.get(left);
-            arrayList.set(left, arrayList.get(right));
-            arrayList.set(right, tmp);
+            curPos++;
         }
 
-        if (size == 2) {
-            return;
-        }
-
-        int finalPivot = pivot;
-
-
-        Future leftFuture = executor.execute(() -> {qsort(arrayList, executor, cmp, begin, finalPivot);});
-
-        if (end - pivot >= 2) {
-            try {
-                executor.execute(() -> {qsort(arrayList, executor, cmp, finalPivot+1, end);}).get();
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            } catch (ExecutionException e) {
-                e.printStackTrace();
-            }
-        }
-
-        try {
-            leftFuture.get();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } catch (ExecutionException e) {
-            e.printStackTrace();
-        }
     }
 }
