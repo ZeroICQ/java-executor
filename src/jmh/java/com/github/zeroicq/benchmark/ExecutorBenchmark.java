@@ -1,10 +1,13 @@
 package com.github.zeroicq.benchmark;
 
 import com.github.zeroicq.Executor;
+import com.github.zeroicq.executor.test.ExecutorTests;
+import com.github.zeroicq.executor.test.RandomString;
 import org.openjdk.jmh.annotations.*;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
+import java.util.Random;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -148,5 +151,28 @@ public class ExecutorBenchmark   {
 
         executor.stop();
     }
+
+//    @Benchmark
+//    public void sortNoThread() {
+//        Executor executor = new Executor();
+//        Random rnd = new Random(200);
+//        RandomString rndString = new RandomString(200, rnd, RandomString.alphanum);
+//
+//        ArrayList<String> strings = new ArrayList<>();
+//        for (int i = 0; i < 4; i++) {
+//            strings.add(rndString.nextString());
+//        }
+//
+//        ArrayList<String> stdSortStrings = new ArrayList<>(strings.size());
+//        ArrayList<String> executorSortStrings = new ArrayList<>(strings.size());
+//
+//        for (String s : strings) {
+//            executorSortStrings.add(s);
+//            stdSortStrings.add(s);
+//        }
+//
+//        stdSortStrings.sort(ExecutorTests.ALPHABETICAL_ORDER);
+//
+//    }
 
 }
