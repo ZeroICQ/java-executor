@@ -89,11 +89,6 @@ public class ExecutorTests {
         for (int i = 0; i < 10; i++) {
             strings.add(rndString.nextString());
         }
-//        ArrayList<String> strings = new ArrayList<>();
-//
-//        strings.add("z");
-//        strings.add("y");
-//        strings.add("x");
 
         ArrayList<String> stdSortStrings = new ArrayList<>(strings.size());
         ArrayList<String> executorSortStrings = new ArrayList<>(strings.size());
