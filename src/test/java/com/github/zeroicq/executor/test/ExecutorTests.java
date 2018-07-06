@@ -105,7 +105,7 @@ public class ExecutorTests {
         executor.stop();
     }
 
-    public Future mergeSort(ArrayList<String> arrayList, Executor executor, Comparator<String> cmp) throws ExecutionException, InterruptedException {
+    public static Future mergeSort(ArrayList<String> arrayList, Executor executor, Comparator<String> cmp) throws ExecutionException, InterruptedException {
         if (arrayList.size() == 1) {
             CompletableFuture<Boolean> f = new CompletableFuture<>();
             f.complete(true);
@@ -132,7 +132,7 @@ public class ExecutorTests {
         return executor.whenAll(() -> merge(left, right, arrayList, cmp), leftFuture, rightFuture);
     }
 
-    private void merge(ArrayList<String> array1 , ArrayList<String> array2, ArrayList<String> destination, Comparator<String> cmp) {
+    private static void merge(ArrayList<String> array1 , ArrayList<String> array2, ArrayList<String> destination, Comparator<String> cmp) {
         int curPos = 0;
         int pos1 = 0;
         int pos2 = 0;

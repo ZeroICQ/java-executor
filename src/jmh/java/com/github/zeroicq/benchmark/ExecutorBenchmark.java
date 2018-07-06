@@ -152,27 +152,43 @@ public class ExecutorBenchmark   {
         executor.stop();
     }
 
-//    @Benchmark
-//    public void sortNoThread() {
-//        Executor executor = new Executor();
-//        Random rnd = new Random(200);
-//        RandomString rndString = new RandomString(200, rnd, RandomString.alphanum);
-//
-//        ArrayList<String> strings = new ArrayList<>();
-//        for (int i = 0; i < 4; i++) {
-//            strings.add(rndString.nextString());
-//        }
-//
-//        ArrayList<String> stdSortStrings = new ArrayList<>(strings.size());
-//        ArrayList<String> executorSortStrings = new ArrayList<>(strings.size());
-//
-//        for (String s : strings) {
-//            executorSortStrings.add(s);
-//            stdSortStrings.add(s);
-//        }
-//
-//        stdSortStrings.sort(ExecutorTests.ALPHABETICAL_ORDER);
-//
-//    }
+    @Benchmark
+    public void sortNoThread() {
+        Executor executor = new Executor();
+        Random rnd = new Random(200);
+        RandomString rndString = new RandomString(200, rnd, RandomString.alphanum);
+
+        ArrayList<String> strings = new ArrayList<>();
+        for (int i = 0; i < 1_000_000; i++) {
+            strings.add(rndString.nextString());
+        }
+
+        ArrayList<String> stdSortStrings = new ArrayList<>(strings.size());
+
+        for (String s : strings) {
+            stdSortStrings.add(s);
+        }
+        stdSortStrings.sort(ExecutorTests.ALPHABETICAL_ORDER);
+    }
+
+    @Benchmark
+    public void sortThreads(MyThreadState state) throws ExecutionException, InterruptedException {
+        Executor executor = new Executor(state.threads);
+        Random rnd = new Random(200);
+        RandomString rndString = new RandomString(200, rnd, RandomString.alphanum);
+
+        ArrayList<String> strings = new ArrayList<>();
+        for (int i = 0; i < 1_000_000; i++) {
+            strings.add(rndString.nextString());
+        }
+
+        ArrayList<String> executorSortStrings = new ArrayList<>(strings.size());
+
+        for (String s : strings) {
+            executorSortStrings.add(s);
+        }
+        ExecutorTests.mergeSort(executorSortStrings, executor, ExecutorTests.ALPHABETICAL_ORDER).get();
+        executor.stop();
+    }
 
 }
